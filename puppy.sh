@@ -37,10 +37,38 @@ read purl
 function pos(){
     # now prompt the user for some question ---
     # first create the file--
-    touch $present_working_dir/cmd/$1
+    echo -ne "\033[35;1m Positional argument is currently not supported, wait for next version." && exit 1
+    #touch $present_working_dir/cmd/$1
     # now add the details to the file ...
     
 } 
+# create a function to create file structute 
+function create_file_o(){
+    # first make a file 
+    touch $present_working_dir/cmd/$1
+    echo '#!/bin/bash' >> $present_working_dir/cmd/$1
+    echo "short=\"this is short notation for $1 command\" #Change the line to your desire output" >> $present_working_dir/cmd/$1
+    echo "long=\"lomg description for $1 command\" #Change the line to your desire output" >> $present_working_dir/cmd/$1
+    # now add the main function --
+    echo "function main() {
+# this function will get called every time when this cmd is triggred --
+# write all your code related to this cmd here 
+echo \"\$1\"
+    }
+main \$1 " >> $present_working_dir/cmd/$1
+}
+# Create optional arg 
+function opt(){
+    # first ask the question 
+    echo -ne "\033[32;1m Short notation with-"
+    read short
+    echo -ne "\033[32;1m Long notation with--"
+    read long
+    # now create the file structure 
+    echo "o:$1:$short:$long" >> $present_working_dir/cmd/arg.pk 
+    # now create file structure for optional arguments 
+    create_file_o $1
+}
 # now handle the argument for init,add 
 if [[ $1 == "init" ]];then
 c_project
@@ -50,6 +78,8 @@ elif [[ $1 == "add" ]];then
     if [[ "$2" == "-p" ]];then 
     # user wants to add positional argument -- anld $3 will be the argument that is called..
     # check if cmd and args.pk exist or not 
+    # currently pass the positional arg i will add this later 
+    pos
     if [[ -f "$present_working_dir/cmd/arg.pk" ]];then 
         # add the entery to the file--
         echo "p:$3" >> cmd/arg.pk
@@ -60,7 +90,7 @@ elif [[ $1 == "add" ]];then
     # user wants to add a optional argument --
     if [[ -f "$present_working_dir/cmd/arg.pk" ]];then 
         # add the entery to the file--
-        echo "p:$3" >> cmd/arg.pk
+        opt $2
     else
         echo -ne "\033[1;1m First initilized the project then add the argument\n" && exit 1 
         fi
