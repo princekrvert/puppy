@@ -11,7 +11,9 @@ read pname
 # now create the folder structure for that project 
 
     # First create the file name 
-    touch $present_working_dir/$pname
+    touch $present_working_dir/"$pname".sh 
+    # call the main app fuction 
+    app $pname.sh
     # now create folder strecture for cmd handling 
     mkdir $present_working_dir/cmd && touch $present_working_dir/cmd/arg.pk
     # and last create a config file to load the all info about project 
@@ -33,6 +35,26 @@ read purl
  echo -e " \n \"Url\" : \"$purl\", }" >> $present_working_dir/project.json
 
 }
+# create a main file structure 
+function app(){
+    echo '#!/bin/bash' >> $present_working_dir/$1
+    echo '# this is main fuction apply the changes if you want ' >> $present_working_dir/$1
+    echo 'if [[ "$1" == "-h" ]] || [[ "$1" == "--help" ]];then 
+echo "help"
+else
+# check for passed argument in that script 
+    for arg in $*;do
+    echo $arg | grep "-" >> /dev/null
+    if [[ $? == 0 ]];then 
+    echo "it is aargument  $arg"
+    
+    else
+    echo "valaue $arg"
+    fi
+    done
+fi' >> $present_working_dir/$1
+# now check for
+}
 #create a function to add the positional argument ---
 function pos(){
     # now prompt the user for some question ---
@@ -53,6 +75,7 @@ function create_file_o(){
     echo "function main() {
 # this function will get called every time when this cmd is triggred --
 # write all your code related to this cmd here 
+# Your value for the this arg is stored in \$1 
 echo \"\$1\"
     }
 main \$1 " >> $present_working_dir/cmd/$1
@@ -94,7 +117,7 @@ elif [[ $1 == "add" ]];then
     else
         echo -ne "\033[1;1m First initilized the project then add the argument\n" && exit 1 
         fi
-    echo "o:$2" >> cmd/arg.pk 
+    
     fi
 fi
 
