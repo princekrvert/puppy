@@ -44,15 +44,56 @@ echo "help"
 else
 # check for passed argument in that script 
     for arg in $*;do
+    
     echo $arg | grep "-" >> /dev/null
     if [[ $? == 0 ]];then 
-    echo "it is aargument  $arg"
-    
+    # grep a full line from that file 
+    search=${arg#-}
+    name=$(cat cmd/arg.pk | grep "[-]$search" | awk -F ":" '{print $2}')
+    # search for dir -- 
+    if [[ -f "cmd/$name" ]];then 
+    # create a arg bridge --
+    echo "$name" >> cmd/.arg
+    else 
+    echo -ne "\033[31;1m Cmd not found"
+    fi
     else
-    echo "valaue $arg"
+    echo "$arg" >> cmd/.arg 
     fi
     done
-fi' >> $present_working_dir/$1
+fi
+# access the bridge line 
+function bridge_line(){
+    if [[ -f "cmd/.arg" ]];then 
+    # fine the number of line in .arg file 
+    # get first and second line 
+    pro=$(cat cmd/.arg | sed -n '1p')
+    arg=$(cat cmd/.arg | sed -n '2p')
+    if [[ $pro == "" ]] || [[ $arg == "" ]];then
+    echo -ne ""
+    else
+    bash cmd/$pro $arg 
+    fi
+    # here i am voilating dry so sorry . i am finding new way to handle this 
+    pro=$(cat cmd/.arg | sed -n '3p')
+    arg=$(cat cmd/.arg | sed -n '4p')
+    if [[ $pro == "" ]] || [[ $arg == "" ]];then
+    echo -ne ""
+    else
+    bash cmd/$pro $arg 
+    pro=$(cat cmd/.arg | sed -n '5p')
+    arg=$(cat cmd/.arg | sed -n '6p')
+    if [[ $pro == " " ]] || [[ $arg == " " ]];then
+    echo -ne ""
+    else
+    bash cmd/$pro $arg 
+    fi
+    fi
+    fi
+    # and remove the bride
+    rm cmd/.arg
+}
+bridge_line' >> $present_working_dir/$1
 # now check for
 }
 #create a function to add the positional argument ---
