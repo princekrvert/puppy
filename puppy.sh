@@ -39,10 +39,29 @@ read purl
 function app(){
     echo '#!/bin/bash' >> $present_working_dir/$1
     echo '# this is main fuction apply the changes if you want ' >> $present_working_dir/$1
+    echo ' #Function for help
+   function help_(){
+   cmd_a=$(ls -la cmd | awk -F":" '{print $2}' | awk '{print $2}')
+   for cmd in $cmd_a;do
+   #now check for . .. and arg.pk file
+   if [[ $cmd == "." ]] || [[ $cmd == ".." ]] || [[ $cmd == "arg.pk" ]];then
+   echo -ne 
+   else
+   # now scrap the short form ane long form 
+   short_f=$(cat cmd/arg.pk | grep "$cmd" |awk -F ":" '{print $3}')
+   long_f=$(cat cmd/arg.pk | grep "$cmd" |awk -F ":" '{print $4}')
+   # scrap the shot discription from the file 
+   short_d=$(cat cmd/$cmd | grep "short" | awk -F "=" '{print $2}')
+   echo -e "\033[32;1m$cmd  $short_f  $long_f $short_d"
+   fi
+   done
+    } '>> $present_working_dir/$1
     echo 'if [[ "$1" == "-h" ]] || [[ "$1" == "--help" ]];then 
-echo "help"
+    help
 else
 # check for passed argument in that script 
+fun=()
+arg=()
     for arg in $*;do
     
     echo $arg | grep "-" >> /dev/null
@@ -52,57 +71,21 @@ else
     name=$(cat cmd/arg.pk | grep "[-]$search" | awk -F ":" '{print $2}')
     # search for dir -- 
     if [[ -f "cmd/$name" ]];then 
-    # create a arg bridge --
-    echo "$name" >> cmd/.arg
+    # add this to fun array 
+    fun+=("$name")
     else 
     echo -ne "\033[31;1m Cmd not found"
     fi
     else
-    echo "$arg" >> cmd/.arg 
+    arg+=("$arg")
     fi
     done
-fi
-# access the bridge line 
-function bridge_line(){
-    if [[ -f "cmd/.arg" ]];then 
-    # fine the number of line in .arg file 
-    # get first and second line 
-    pro=$(cat cmd/.arg | sed -n '1p')
-    arg=$(cat cmd/.arg | sed -n '2p')
-    if [[ $pro == "" ]] || [[ $arg == "" ]];then
-    echo -ne ""
-    else
-    bash cmd/$pro $arg 
-    fi
-    # here i am voilating dry so sorry . i am finding new way to handle this 
-    pro=$(cat cmd/.arg | sed -n '3p')
-    arg=$(cat cmd/.arg | sed -n '4p')
-    if [[ $pro == "" ]] || [[ $arg == "" ]];then
-    echo -ne ""
-    else
-    bash cmd/$pro $arg 
-    pro=$(cat cmd/.arg | sed -n '5p')
-    arg=$(cat cmd/.arg | sed -n '6p')
-    if [[ $pro == " " ]] || [[ $arg == " " ]];then
-    echo -ne ""
-    else
-    bash cmd/$pro $arg 
-    fi
-    fi
-    fi
-    # and remove the bride
-    rm cmd/.arg
-}
-bridge_line' >> $present_working_dir/$1
-# now check for
-}
-#create a function to add the positional argument ---
-function pos(){
-    # now prompt the user for some question ---
-    # first create the file--
-    echo -ne "\033[35;1m Positional argument is currently not supported, wait for next version." && exit 1
-    #touch $present_working_dir/cmd/$1
-    # now add the details to the file ...
+fi 
+
+# now loop threw tha array 
+for (( i=0; i< ${#fun[@]} ; i++ ));do
+bash cmd/${fun[$i]} ${arg[$i]}
+done ' >> $present_working_dir/$1
     
 } 
 # create a function to create file structute 
@@ -124,9 +107,13 @@ main \$1 " >> $present_working_dir/cmd/$1
 # Create optional arg 
 function opt(){
     # first ask the question 
-    echo -ne "\033[32;1m Short notation with-"
+    echo -ne "\033[32;1m Short notation with-: "
     read short
-    echo -ne "\033[32;1m Long notation with--"
+    # now check for -n 
+    if [[ $short == "-n" ]];then 
+    echo -ne "\033[31;1m We can't add -n because in bash -n has special meaning" && exit 1
+    fi
+    echo -ne "\033[32;1m Long notation with-- :"
     read long
     # now create the file structure 
     echo "o:$1:$short:$long" >> $present_working_dir/cmd/arg.pk 
