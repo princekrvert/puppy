@@ -1,0 +1,151 @@
+#!/usr/bin/bash
+#Author Prince kumar 
+# date 29 mar 2023
+# Ask the question and work on dir strecture .....
+# Store the var for present working dir 
+present_working_dir=$(pwd)
+function c_project(){
+echo -ne "\033[33;1m Enter the project name: "
+read pname
+[[ -n "$pname" ]] || { echo -e "\033[31;1m Project name can not be empty:"  && exit 1; } 
+# now create the folder structure for that project 
+
+    # First create the file name 
+    touch $present_working_dir/"$pname".sh 
+    # call the main app fuction 
+    app $pname.sh
+    # now create folder strecture for cmd handling 
+    mkdir $present_working_dir/cmd && touch $present_working_dir/cmd/arg.pk
+    # and last create a config file to load the all info about project 
+    touch $present_working_dir/project.json
+}
+function create_project(){
+# now ask for the author name and verion 
+echo -ne "\033[33;1m Author name: "
+read author 
+echo -ne "\033[33;1m Project version: "
+read version
+echo -ne "\033[33;1m Project url: "
+read purl
+# create a function to add the project details in the project json file 
+
+ # check if author name is not provided 
+ echo -e "{ \n \"Author\" : \"$author\", " >> $present_working_dir/project.json 
+ echo -e "  \n \"Version\" : \"$version\", " >> $present_working_dir/project.json
+ echo -e " \n \"Url\" : \"$purl\", }" >> $present_working_dir/project.json
+
+}
+# create a main file structure 
+function app(){
+    echo '#!/bin/bash' >> $present_working_dir/$1
+    echo '# this is main fuction apply the changes if you want ' >> $present_working_dir/$1
+    echo -e " #Function for help
+   function help_(){
+   cmd_a=\$(ls -la cmd | awk -F\":\" '{print \$2}' | awk '{print \$2}')
+   for cmd in \$cmd_a;do
+   #now check for . .. and arg.pk file
+   if [[ \$cmd == \".\" ]] || [[ \$cmd == \"..\" ]] || [[ \$cmd == \"arg.pk\" ]];then
+   echo -ne 
+   else
+   # now scrap the short form ane long form 
+   short_f=\$(cat cmd/arg.pk | grep \"\$cmd\" |awk -F \":\" '{print \$3}')
+   long_f=\$(cat cmd/arg.pk | grep \"\$cmd\" |awk -F \":\" '{print \$4}')
+   # scrap the shot discription from the file 
+   short_d=\$(cat cmd/\$cmd | grep \"short\" | awk -F \"=\" '{print \$2}')
+   echo -e \"\033[32;1m\$cmd  \$short_f  \$long_f \$short_d\"
+   fi
+   done
+    } " >> $present_working_dir/$1
+    echo -e " if [[ \"\$1\" == \"-h\" ]] || [[ \"\$1\" == \"--help\" ]];then 
+    help_
+else
+# check for passed argument in that script 
+fun=()
+arg=()
+    for arg in \$*;do
+    
+    echo \$arg | grep \"-\" >> /dev/null
+    if [[ \$? == 0 ]];then 
+    # grep a full line from that file 
+    search=\${arg#-}
+    name=\$(cat cmd/arg.pk | grep \"[-]\$search\" | awk -F \":\" '{print \$2}')
+    # search for dir -- 
+    if [[ -f \"cmd/\$name\" ]];then 
+    # add this to fun array 
+    fun+=(\"\$name\")
+    else 
+    echo -ne \"\033[31;1m Cmd not found\"
+    fi
+    else
+    arg+=(\"\$arg\")
+    fi
+    done
+fi 
+
+# now loop threw tha array 
+for (( i=0; i< \${#fun[@]} ; i++ ));do
+bash cmd/\${fun[\$i]} \${arg[\$i]}
+done " >> $present_working_dir/$1
+    
+} 
+# create a function to create file structute 
+function create_file_o(){
+    # first make a file 
+    touch $present_working_dir/cmd/$1
+    echo '#!/bin/bash' >> $present_working_dir/cmd/$1
+    echo "short=\"this is short notation for $1 command\" #Change the line to your desire output" >> $present_working_dir/cmd/$1
+    echo "long=\"lomg description for $1 command\" #Change the line to your desire output" >> $present_working_dir/cmd/$1
+    # now add the main function --
+    echo "function main() {
+# this function will get called every time when this cmd is triggred --
+# write all your code related to this cmd here 
+# Your value for the this arg is stored in \$1 
+echo \"\$1\"
+    }
+main \$1 " >> $present_working_dir/cmd/$1
+}
+# Create optional arg 
+function opt(){
+    # first ask the question 
+    echo -ne "\033[32;1m Short notation with-: "
+    read short
+    # now check for -n 
+    if [[ $short == "-n" ]];then 
+    echo -ne "\033[31;1m We can't add -n because in bash -n has special meaning" && exit 1
+    fi
+    echo -ne "\033[32;1m Long notation with-- :"
+    read long
+    # now create the file structure 
+    echo "o:$1:$short:$long" >> $present_working_dir/cmd/arg.pk 
+    # now create file structure for optional arguments 
+    create_file_o $1
+}
+# now handle the argument for init,add 
+if [[ $1 == "init" ]];then
+c_project
+create_project
+elif [[ $1 == "add" ]];then
+# now check for the -p for positional argument 
+    if [[ "$2" == "-p" ]];then 
+    # user wants to add positional argument -- anld $3 will be the argument that is called..
+    # check if cmd and args.pk exist or not 
+    # currently pass the positional arg i will add this later 
+    pos
+    if [[ -f "$present_working_dir/cmd/arg.pk" ]];then 
+        # add the entery to the file--
+        echo "p:$3" >> cmd/arg.pk
+    else
+        echo -ne "\033[1;1m First initilized the project then add the argument" && exit 1 
+        fi
+    else
+    # user wants to add a optional argument --
+    if [[ -f "$present_working_dir/cmd/arg.pk" ]];then 
+        # add the entery to the file--
+        opt $2
+    else
+        echo -ne "\033[1;1m First initilized the project then add the argument\n" && exit 1 
+        fi
+    
+    fi
+fi
+
