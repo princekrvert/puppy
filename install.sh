@@ -16,7 +16,7 @@ echo -ne " _______  __   __  _______  _______  __   __
 
 platform=$(uname -o)
 if [[ $platform == "Android" ]];then 
-cp puppy /usr/bin
+cp puppy /data/data/com.termux/files/usr/bin
 else
 sudo cp puppy /usr/bin
 fi 
