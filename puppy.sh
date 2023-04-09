@@ -39,53 +39,53 @@ read purl
 function app(){
     echo '#!/bin/bash' >> $present_working_dir/$1
     echo '# this is main fuction apply the changes if you want ' >> $present_working_dir/$1
-    echo ' #Function for help
+    echo -e " #Function for help
    function help_(){
-   cmd_a=$(ls -la cmd | awk -F":" '{print $2}' | awk '{print $2}')
-   for cmd in $cmd_a;do
+   cmd_a=\$(ls -la cmd | awk -F\":\" '{print \$2}' | awk '{print \$2}')
+   for cmd in \$cmd_a;do
    #now check for . .. and arg.pk file
-   if [[ $cmd == "." ]] || [[ $cmd == ".." ]] || [[ $cmd == "arg.pk" ]];then
+   if [[ \$cmd == \".\" ]] || [[ \$cmd == \"..\" ]] || [[ \$cmd == \"arg.pk\" ]];then
    echo -ne 
    else
    # now scrap the short form ane long form 
-   short_f=$(cat cmd/arg.pk | grep "$cmd" |awk -F ":" '{print $3}')
-   long_f=$(cat cmd/arg.pk | grep "$cmd" |awk -F ":" '{print $4}')
+   short_f=\$(cat cmd/arg.pk | grep \"\$cmd\" |awk -F \":\" '{print \$3}')
+   long_f=\$(cat cmd/arg.pk | grep \"\$cmd\" |awk -F \":\" '{print \$4}')
    # scrap the shot discription from the file 
-   short_d=$(cat cmd/$cmd | grep "short" | awk -F "=" '{print $2}')
-   echo -e "\033[32;1m$cmd  $short_f  $long_f $short_d"
+   short_d=\$(cat cmd/\$cmd | grep \"short\" | awk -F \"=\" '{print \$2}')
+   echo -e \"\033[32;1m\$cmd  \$short_f  \$long_f \$short_d\"
    fi
    done
-    } '>> $present_working_dir/$1
-    echo 'if [[ "$1" == "-h" ]] || [[ "$1" == "--help" ]];then 
-    help
+    } " >> $present_working_dir/$1
+    echo -e " if [[ \"\$1\" == \"-h\" ]] || [[ \"\$1\" == \"--help\" ]];then 
+    help_
 else
 # check for passed argument in that script 
 fun=()
 arg=()
-    for arg in $*;do
+    for arg in \$*;do
     
-    echo $arg | grep "-" >> /dev/null
-    if [[ $? == 0 ]];then 
+    echo \$arg | grep \"-\" >> /dev/null
+    if [[ \$? == 0 ]];then 
     # grep a full line from that file 
-    search=${arg#-}
-    name=$(cat cmd/arg.pk | grep "[-]$search" | awk -F ":" '{print $2}')
+    search=\${arg#-}
+    name=\$(cat cmd/arg.pk | grep \"[-]\$search\" | awk -F \":\" '{print \$2}')
     # search for dir -- 
-    if [[ -f "cmd/$name" ]];then 
+    if [[ -f \"cmd/\$name\" ]];then 
     # add this to fun array 
-    fun+=("$name")
+    fun+=(\"\$name\")
     else 
-    echo -ne "\033[31;1m Cmd not found"
+    echo -ne \"\033[31;1m Cmd not found\"
     fi
     else
-    arg+=("$arg")
+    arg+=(\"\$arg\")
     fi
     done
 fi 
 
 # now loop threw tha array 
-for (( i=0; i< ${#fun[@]} ; i++ ));do
-bash cmd/${fun[$i]} ${arg[$i]}
-done ' >> $present_working_dir/$1
+for (( i=0; i< \${#fun[@]} ; i++ ));do
+bash cmd/\${fun[\$i]} \${arg[\$i]}
+done " >> $present_working_dir/$1
     
 } 
 # create a function to create file structute 
