@@ -134,6 +134,8 @@ function opt(){
 # if args is not provided then display the help function 
 if [[ $1 == "" ]];then 
 	help
+elif [[ $1 == "help" || $1 == "--help" ]];then
+	help
 fi
 # now handle the argument for init,add 
 if [[ $1 == "init" ]];then
