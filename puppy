@@ -23,6 +23,8 @@ function create_project(){
 # now ask for the author name and verion 
 echo -ne "\033[33;1m Author name: "
 read author 
+echo -ne "\033[33;1m Auther Email: "
+read email
 echo -ne "\033[33;1m Project version: "
 read version
 echo -ne "\033[33;1m Project url: "
@@ -30,10 +32,19 @@ read purl
 # create a function to add the project details in the project json file 
 
  # check if author name is not provided 
+ #
  echo -e "{ \n \"Author\" : \"$author\", " >> $present_working_dir/project.json 
  echo -e "  \n \"Version\" : \"$version\", " >> $present_working_dir/project.json
+ echo -e " \n \"Email\" : \"$email\" , " >> $present_working_dir/project.json
  echo -e " \n \"Url\" : \"$purl\", }" >> $present_working_dir/project.json
 
+}
+# disply the help 
+help(){
+#Now add the help 
+echo -e "\033[32;1m Uses: puppu <option>"
+echo -e "\033[35;1m Option : init (To initilize project)"
+echo -ne "\033[35;1m Option : add (To add an argument)"
 }
 # create a main file structure 
 function app(){
@@ -120,6 +131,10 @@ function opt(){
     # now create file structure for optional arguments 
     create_file_o $1
 }
+# if args is not provided then display the help function 
+if [[ $1 == "" ]];then 
+	help
+fi
 # now handle the argument for init,add 
 if [[ $1 == "init" ]];then
 c_project
