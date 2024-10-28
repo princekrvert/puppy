@@ -5,8 +5,7 @@
 # Store the var for present working dir 
 present_working_dir=$(pwd)
 function c_project(){
-echo -ne "\033[33;1m Enter the project name: "
-read pname
+pname=$(gum input --placeholder="Enter the project name" --placeholder.foreground="33" --prompt="?")
 [[ -n "$pname" ]] || { echo -e "\033[31;1m Project name can not be empty:"  && exit 1; } 
 # now create the folder structure for that project 
 
@@ -21,14 +20,11 @@ read pname
 }
 function create_project(){
 # now ask for the author name and verion 
-echo -ne "\033[33;1m Author name: "
-read author 
-echo -ne "\033[33;1m Auther Email: "
-read email
-echo -ne "\033[33;1m Project version: "
-read version
-echo -ne "\033[33;1m Project url: "
-read purl
+author=$(gum input --placeholder="Enter the author name" --placeholder.foreground="33" --prompt=">")
+email=$(gum input --placeholder="Enter the author email" --placeholder.foreground="33" --prompt=">")
+version=$(gum input --placeholder="Enter the project version" --placeholder.foreground="33" --prompt=">")
+purl=$(gum input --placeholder="Enter the project url" --placeholder.foreground="33" --prompt=">")
+
 # create a function to add the project details in the project json file 
 
  # check if author name is not provided 
